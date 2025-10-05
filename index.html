@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bu gün beni sevmeyi unuttun...</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Comic+Neue:wght@700&display=swap" rel="stylesheet">
+  <!-- anime.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #181c2b;
+      overflow: hidden;
+      position: relative;
+    }
+    .floating-hearts {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .heart {
+      position: absolute;
+      width: 32px;
+      height: 32px;
+      pointer-events: none;
+      opacity: 0.7;
+      filter: blur(0.5px) drop-shadow(0 0 8px #b22234);
+      will-change: transform, opacity;
+    }
+    .heart.burgundy {
+      filter: drop-shadow(0 0 12px #b22234);
+    }
+    .heart.navy {
+      filter: drop-shadow(0 0 12px #223366);
+    }
+    .romantic-text {
+      position: absolute;
+      top: 8vh;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #fff;
+      font-family: 'Pacifico', 'Comic Neue', cursive, sans-serif;
+      font-size: 2.2rem;
+      text-shadow: 0 2px 12px #b22234, 0 0 4px #223366;
+      z-index: 10;
+      user-select: none;
+      letter-spacing: 1px;
+    }
+    .cat-container {
+      position: absolute;
+      left: 50%;
+      bottom: 8vh;
+      transform: translateX(-50%) scale(1);
+      z-index: 10;
+      cursor: pointer;
+      transition: filter 0.2s;
+    }
+    .cat-container:active {
+      filter: brightness(1.1) drop-shadow(0 0 8px #b22234);
+    }
+    .cat-svg {
+      width: 180px;
+      height: 180px;
+      display: block;
+    }
+    .kiss-heart {
+      position: absolute;
+      left: 50%;
+      bottom: 180px;
+      width: 40px;
+      height: 40px;
+      z-index: 20;
+      pointer-events: none;
+      opacity: 0;
+    }
+    .firework-heart {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      z-index: 30;
+      pointer-events: none;
+      opacity: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="floating-hearts" id="floatingHearts"></div>
+  <div class="romantic-text">Bu gün beni sevmeyi unuttun...</div>
+  <div class="cat-container" id="catContainer" title="Tıkla!">
+    <!-- Cute Cat SVG -->
+    <svg class="cat-svg" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <g id="cat-body">
+        <ellipse cx="90" cy="110" rx="55" ry="50" fill="#f7e6d7" stroke="#222" stroke-width="3"/>
+      </g>
+      <g id="cat-head">
+        <ellipse cx="90" cy="70" rx="45" ry="40" fill="#f7e6d7" stroke="#222" stroke-width="3"/>
+        <!-- Ears -->
+        <polygon points="45,55 30,10 70,40" fill="#f7e6d7" stroke="#222" stroke-width="3"/>
+        <polygon points="135,55 150,10 110,40" fill="#f7e6d7" stroke="#222" stroke-width="3"/>
+        <!-- Inner Ears -->
+        <polygon points="48,48 35,18 62,38" fill="#e6b7b7"/>
+        <polygon points="132,48 145,18 118,38" fill="#b7c6e6"/>
+        <!-- Eyes -->
+        <ellipse id="cat-eye-left" cx="72" cy="70" rx="7" ry="10" fill="#222"/>
+        <ellipse id="cat-eye-right" cx="108" cy="70" rx="7" ry="10" fill="#222"/>
+        <!-- Smile (hidden by default) -->
+        <path id="cat-smile" d="M75 90 Q90 105 105 90" stroke="#b22234" stroke-width="3" fill="none" style="opacity:0;"/>
+        <!-- Neutral mouth -->
+        <ellipse id="cat-mouth" cx="90" cy="90" rx="8" ry="3" fill="#b22234"/>
+        <!-- Nose -->
+        <ellipse cx="90" cy="85" rx="4" ry="3" fill="#b22234"/>
+        <!-- Whiskers -->
+        <path d="M60 90 Q50 92 40 88" stroke="#222" stroke-width="2"/>
+        <path d="M60 95 Q50 98 40 95" stroke="#222" stroke-width="2"/>
+        <path d="M120 90 Q130 92 140 88" stroke="#222" stroke-width="2"/>
+        <path d="M120 95 Q130 98 140 95" stroke="#222" stroke-width="2"/>
+      </g>
+      <!-- Paws holding screen -->
+      <ellipse id="cat-paw-left" cx="65" cy="150" rx="15" ry="10" fill="#f7e6d7" stroke="#222" stroke-width="3"/>
+      <ellipse id="cat-paw-right" cx="115" cy="150" rx="15" ry="10" fill="#f7e6d7" stroke="#222" stroke-width="3"/>
+    </svg>
+  </div>
+  <!-- Kiss Heart Emoji -->
+  <div class="kiss-heart" id="kissHeart">😘</div>
+  <script>
+    // --- Floating Hearts ---
+    const floatingHearts = document.getElementById('floatingHearts');
+    const heartColors = [
+      { class: 'burgundy', color: '#b22234' },
+      { class: 'navy', color: '#223366' }
+    ];
+    function createFloatingHeart() {
+      const heart = document.createElement('div');
+      const type = heartColors[Math.floor(Math.random() * heartColors.length)];
+      heart.className = `heart ${type.class}`;
+      heart.innerHTML = `
+        <svg width="32" height="32" viewBox="0 0 32 32">
+          <path d="M16 29s-13-8.35-13-16.5S10.5 2 16 8.5 29 2 29 12.5 16 29 16 29z" fill="${type.color}"/>
+        </svg>`;
+      heart.style.left = Math.random() * 100 + 'vw';
+      heart.style.top = '100vh';
+      floatingHearts.appendChild(heart);
+      const duration = 6000 + Math.random() * 4000;
+      anime({
+        targets: heart,
+        translateY: [0, -window.innerHeight - 60],
+        translateX: [0, (Math.random() - 0.5) * 120],
+        opacity: [0.7, 0.2],
+        easing: 'easeOutCubic',
+        duration,
+        complete: () => heart.remove()
+      });
+    }
+    setInterval(createFloatingHeart, 400);
+    for (let i = 0; i < 18; i++) createFloatingHeart();
+
+    // --- Cat Animation ---
+    const catContainer = document.getElementById('catContainer');
+    const catSVG = catContainer.querySelector('.cat-svg');
+    const catSmile = catSVG.getElementById('cat-smile');
+    const catMouth = catSVG.getElementById('cat-mouth');
+    const catPawLeft = catSVG.getElementById('cat-paw-left');
+    const catPawRight = catSVG.getElementById('cat-paw-right');
+    let animating = false;
+
+    function catEntrance() {
+      catContainer.style.opacity = 0;
+      catContainer.style.transform = 'translateX(-50%) scale(0.7) translateY(80px)';
+      anime({
+        targets: catContainer,
+        opacity: [0, 1],
+        translateY: [80, 0],
+        scale: [0.7, 1],
+        easing: 'easeOutBack',
+        duration: 1200,
+        delay: 400,
+        complete: catJump
+      });
+    }
+    function catJump() {
+      anime({
+        targets: catContainer,
+        translateY: [0, -60, 0],
+        scale: [1, 1.1, 1],
+        easing: 'easeOutElastic(1, .7)',
+        duration: 900,
+        complete: catWalk
+      });
+    }
+    function catWalk() {
+      anime({
+        targets: catContainer,
+        scale: [1, 1.18],
+        translateY: [0, 0],
+        duration: 1200,
+        easing: 'easeInOutSine',
+        update: anim => {
+          // Paw wiggle
+          const t = anim.progress / 100;
+          catPawLeft.setAttribute('cy', 150 + Math.sin(t * 8 * Math.PI) * 4);
+          catPawRight.setAttribute('cy', 150 + Math.cos(t * 8 * Math.PI) * 4);
+        },
+        complete: () => {
+          // Cat "holds" the screen
+          anime({
+            targets: catContainer,
+            scale: [1.18, 1.12],
+            duration: 400,
+            easing: 'easeOutBack'
+          });
+        }
+      });
+    }
+    catEntrance();
+
+    // --- Cat Click: Smile & Kiss ---
+    const kissHeart = document.getElementById('kissHeart');
+    function resetCatFace() {
+      catSmile.style.opacity = 0;
+      catMouth.style.opacity = 1;
+    }
+    function showCatSmile() {
+      catSmile.style.opacity = 1;
+      catMouth.style.opacity = 0;
+    }
+    function sendKiss() {
+      kissHeart.style.opacity = 1;
+      kissHeart.style.transform = 'translate(-50%, 0) scale(1)';
+      anime({
+        targets: kissHeart,
+        opacity: [1, 1, 0.7, 0],
+        translateY: [0, -120, -180],
+        scale: [1, 1.3, 0.7],
+        easing: 'easeInOutCubic',
+        duration: 900,
+        update: anim => {
+          if (anim.progress > 60 && !kissHeart._exploded) {
+            kissHeart._exploded = true;
+            fireworkHearts();
+          }
+        },
+        complete: () => {
+          kissHeart.style.opacity = 0;
+          kissHeart._exploded = false;
+        }
+      });
+    }
+    function fireworkHearts() {
+      const n = 10 + Math.floor(Math.random() * 4);
+      for (let i = 0; i < n; i++) {
+        const angle = (2 * Math.PI * i) / n;
+        const color = heartColors[Math.floor(Math.random() * heartColors.length)];
+        const fw = document.createElement('div');
+        fw.className = `firework-heart ${color.class}`;
+        fw.innerHTML = `<svg width="24" height="24" viewBox="0 0 32 32"><path d="M16 29s-13-8.35-13-16.5S10.5 2 16 8.5 29 2 29 12.5 16 29 16 29z" fill="${color.color}"/></svg>`;
+        fw.style.left = 'calc(50% - 12px)';
+        fw.style.bottom = '200px';
+        document.body.appendChild(fw);
+        anime({
+          targets: fw,
+          opacity: [0, 1, 0],
+          translateX: [0, Math.cos(angle) * 120],
+          translateY: [0, Math.sin(angle) * -120],
+          scale: [1, 1.3, 0.7],
+          easing: 'easeOutCubic',
+          duration: 900,
+          delay: 60 + Math.random() * 120,
+          complete: () => fw.remove()
+        });
+      }
+    }
+    function resetCatAnimation() {
+      resetCatFace();
+      catContainer.style.pointerEvents = '';
+      animating = false;
+    }
+    catContainer.addEventListener('click', () => {
+      if (animating) return;
+      animating = true;
+      showCatSmile();
+      sendKiss();
+      setTimeout(resetCatAnimation, 1200);
+    });
+    // Reset face after a while if not clicked
+    setInterval(resetCatFace, 2000);
+  </script>
+</body>
+</html>
